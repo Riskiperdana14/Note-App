@@ -3,7 +3,11 @@ import mongoose from "mongoose";
 // Definisi schema untuk entitas Admin
 const adminSchema = new mongoose.Schema(
   {
-    name: {
+    tittle: {
+      type: String,
+      required: true,
+    },
+    content: {
       type: String,
       required: true,
     },
