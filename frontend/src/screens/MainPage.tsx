@@ -4,7 +4,10 @@ import {
     Text,
     View,
     useWindowDimensions,
+    Modal,
+    TouchableOpacity,
 } from 'react-native';
+import React, { useState } from 'react';
 import CardNotes from '../components/CardNotes';
 import { PlusIcon } from '../components/Svg';
 import { MainPageProps } from '../types/Screens';
@@ -35,6 +38,25 @@ const notes: GetNotesResponse[] = [
 
 const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     const { width } = useWindowDimensions();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+
+    const handleDelete = () => {
+        setModalVisible(true);
+    };
+
+    const handleDeleteNote = () => {
+        console.log('Deleting note with id:', selectedNoteId);
+        setModalVisible(false);
+    };
+
+    const handleConfirmDelete = () => {
+        setModalVisible(false);
+    };
+
+    const handleCancelDelete = () => {
+        setModalVisible(false);
+    };
 
     return (
         <View
@@ -96,11 +118,50 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                                         noteId: note.id,
                                     })
                                 }
+                                onlongPress={() => {
+                                    handleDelete();
+                                }}
                             />
                         );
                     })}
                 </View>
             </ScrollView>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(false);
+                }}>
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}>
+                    <View
+                        style={{
+                            backgroundColor: 'white',
+                            padding: 20,
+                            borderRadius: 10,
+                        }}>
+                        <Text>Are you sure you want to delete this note?</Text>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-around',
+                                marginTop: 10,
+                            }}>
+                            <TouchableOpacity onPress={handleConfirmDelete}>
+                                <Text style={{ color: 'red' }}>Delete</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleCancelDelete}>
+                                <Text>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };

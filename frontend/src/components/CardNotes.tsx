@@ -4,9 +4,15 @@ type CardProps = {
     title: string;
     desc: string;
     onPress: () => void;
+    onlongPress?: () => void;
 };
 
-const CardNotes: React.FC<CardProps> = ({ desc, title, onPress }) => {
+const CardNotes: React.FC<CardProps> = ({
+    desc,
+    title,
+    onPress,
+    onlongPress,
+}) => {
     const { width } = useWindowDimensions();
 
     return (
@@ -19,7 +25,8 @@ const CardNotes: React.FC<CardProps> = ({ desc, title, onPress }) => {
                 borderWidth: 1,
                 borderColor: '#C9BC2C',
             }}
-            onPress={onPress}>
+            onPress={onPress}
+            onLongPress={onlongPress}>
             <Text
                 style={{
                     fontFamily: 'Cabin-SemiBold',

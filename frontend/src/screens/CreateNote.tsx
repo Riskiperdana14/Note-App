@@ -13,6 +13,7 @@ import { BackIcon } from '../components/Svg';
 import { Formik, FormikHelpers, FormikProps } from 'formik';
 import { CreateNoteForm } from '../types/Service';
 import * as yup from 'yup';
+import LinearGradient from 'react-native-linear-gradient';
 
 const CreateNote: React.FC<CreateNoteProps> = ({ navigation }) => {
     const { width } = useWindowDimensions();
@@ -33,42 +34,36 @@ const CreateNote: React.FC<CreateNoteProps> = ({ navigation }) => {
         <View
             style={{
                 flex: 1,
-                backgroundColor: '#FDF6B1',
             }}>
-            <ScrollView
-                contentContainerStyle={{
-                    flexGrow: 1,
+            <LinearGradient
+                colors={['#FDF6B1', '#FEFCE5']}
+                style={{
+                    flex: 1,
+                    width: '100%',
                 }}>
-                <Formik
-                    initialValues={addNoteInitialValue}
-                    validationSchema={addNoteSchema}
-                    onSubmit={values => onSubmit(values)}>
-                    {({
-                        handleChange,
-                        handleSubmit,
-                        values,
-                    }: FormikProps<CreateNoteForm>) => (
-                        <>
-                            <View
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: '#B1AC7C',
-                                    padding: 20,
-                                }}>
-                                <Pressable
+                <ScrollView
+                    contentContainerStyle={{
+                        flexGrow: 1,
+                    }}>
+                    <Formik
+                        initialValues={addNoteInitialValue}
+                        validationSchema={addNoteSchema}
+                        onSubmit={values => onSubmit(values)}>
+                        {({
+                            handleChange,
+                            handleSubmit,
+                            values,
+                        }: FormikProps<CreateNoteForm>) => (
+                            <>
+                                <View
                                     style={{
                                         display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        padding: 10,
-                                    }}
-                                    onPress={() => navigation.goBack()}>
-                                    <BackIcon />
-                                </Pressable>
-                                {values.desc && values.title && (
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        borderBottomWidth: 1,
+                                        borderBottomColor: '#B1AC7C',
+                                        padding: 20,
+                                    }}>
                                     <Pressable
                                         style={{
                                             display: 'flex',
@@ -76,37 +71,49 @@ const CreateNote: React.FC<CreateNoteProps> = ({ navigation }) => {
                                             justifyContent: 'center',
                                             padding: 10,
                                         }}
-                                        onPress={() => handleSubmit()}>
-                                        <CheckIcon />
+                                        onPress={() => navigation.goBack()}>
+                                        <BackIcon />
                                     </Pressable>
-                                )}
-                            </View>
-                            <View
-                                style={{
-                                    padding: 20,
-                                }}>
-                                <TextInput
-                                    placeholder="Type your title"
-                                    onChangeText={handleChange('title')}
+                                    {values.desc && values.title && (
+                                        <Pressable
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                padding: 10,
+                                            }}
+                                            onPress={() => handleSubmit()}>
+                                            <CheckIcon />
+                                        </Pressable>
+                                    )}
+                                </View>
+                                <View
                                     style={{
-                                        fontSize: 34,
-                                        fontFamily: 'Cabin-Regular',
-                                    }}
-                                />
-                                <TextInput
-                                    placeholder="Type here ..."
-                                    onChangeText={handleChange('desc')}
-                                    style={{
-                                        fontSize: 17,
-                                        fontFamily: 'Cabin-Regular',
-                                    }}
-                                    multiline
-                                />
-                            </View>
-                        </>
-                    )}
-                </Formik>
-            </ScrollView>
+                                        padding: 20,
+                                    }}>
+                                    <TextInput
+                                        placeholder="Type your title"
+                                        onChangeText={handleChange('title')}
+                                        style={{
+                                            fontSize: 34,
+                                            fontFamily: 'Cabin-Regular',
+                                        }}
+                                    />
+                                    <TextInput
+                                        placeholder="Type here ..."
+                                        onChangeText={handleChange('desc')}
+                                        style={{
+                                            fontSize: 17,
+                                            fontFamily: 'Cabin-Regular',
+                                        }}
+                                        multiline
+                                    />
+                                </View>
+                            </>
+                        )}
+                    </Formik>
+                </ScrollView>
+            </LinearGradient>
         </View>
     );
 };
