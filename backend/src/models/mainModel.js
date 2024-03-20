@@ -6,7 +6,7 @@ const mainSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    desc: {
+    content: {
       type: String,
       required: true,
     },

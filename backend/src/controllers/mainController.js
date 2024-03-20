@@ -10,6 +10,7 @@ const mainController = {
       const newAdmin = new Admin({
         tittle: tittle,
         desc: desc,
+
       });
 
       await newAdmin.save();
@@ -25,9 +26,9 @@ const mainController = {
       const admins = await Admin.find();
       const proadmin = admins.map((admin) => {
         return {
-          _id: admin._id,
+          id:admin.id,
           tittle: admin.tittle,
-          desc: admin.desc,
+          content: admin.content,
           dibuatSaat: moment(admin.createdAt).format(
             "dddd-DD-MMMM-YYYY[T]HH:mm:ss"
           ),
@@ -76,11 +77,11 @@ const mainController = {
   updateNote: async (req, res) => {
     try {
       const { id } = req.params;
-      const { tittle, desc } = req.body;
+      const { tittle, content } = req.body;
 
       const updatedAdmin = await Admin.findByIdAndUpdate(
         id,
-        { tittle: tittle, desc: desc },
+        { tittle: tittle, content: content },
         { new: true }
       );
 
