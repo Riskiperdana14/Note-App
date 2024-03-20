@@ -14,7 +14,7 @@ const DetailNote: React.FC<DetailNoteProps> = ({ navigation, route }) => {
     const { width } = useWindowDimensions();
     const { params } = route;
 
-    console.log('params', params);
+    console.log('params', params.noteId);
 
     return (
         <View

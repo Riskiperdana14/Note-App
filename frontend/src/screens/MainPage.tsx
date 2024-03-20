@@ -7,47 +7,24 @@ import {
     Modal,
     TouchableOpacity,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CardNotes from '../components/CardNotes';
 import { PlusIcon } from '../components/Svg';
 import { MainPageProps } from '../types/Screens';
 import { GetNotesResponse } from '../types/Service';
-
-const notes: GetNotesResponse[] = [
-    {
-        id: '1',
-        title: 'Title 1',
-        desc: 'Lorem ipsum dolor sit amet, consectetur adip nonum et just sed diam non proident du contratibus et just sed diam non proident du tincidunt et just sed diam non proident',
-    },
-    {
-        id: '2',
-        title: 'Title 2',
-        desc: 'Lorem ipsum dolor sit amet, consectetur adip nonum et just sed diam non proident du contratibus et just sed diam non proident du tincidunt et just sed diam non proident',
-    },
-    {
-        id: '3',
-        title: 'Title 3',
-        desc: 'Lorem ipsum dolor sit amet, consectetur adip nonum et just sed diam non proident du contratibus et just sed diam non proident du tincidunt et just sed diam non proident',
-    },
-    {
-        id: '4',
-        title: 'Title 4',
-        desc: 'Lorem ipsum dolor sit amet, consectetur adip nonum et just sed diam non proident du contratibus et just sed diam non proident du tincidunt et just sed diam non proident',
-    },
-];
+import { useGetAllNotes } from '../../hooks/useNotes';
 
 const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+    const [notes, setNotes] = useState<GetNotesResponse[]>([]);
+    const mutationGetAllNotes = useGetAllNotes();
+    // console.log('notes: ', JSON.stringify(notes, null, 4));
 
     const handleDelete = () => {
+        console.log('deleted');
         setModalVisible(true);
-    };
-
-    const handleDeleteNote = () => {
-        console.log('Deleting note with id:', selectedNoteId);
-        setModalVisible(false);
     };
 
     const handleConfirmDelete = () => {
@@ -57,6 +34,37 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     const handleCancelDelete = () => {
         setModalVisible(false);
     };
+
+    useEffect(() => {
+        mutationGetAllNotes.mutate(undefined, {
+            onSuccess: response => {
+                setNotes(response.data);
+            },
+            onError: error => {
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    console.log(JSON.stringify(error.response.data, null, 4));
+                    console.log(JSON.stringify(error.response.status, null, 4));
+                    console.log(
+                        JSON.stringify(error.response.headers),
+                        null,
+                        4,
+                    );
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+                    // http.ClientRequest in node.js
+                    console.log(JSON.stringify(error.request), null, 4);
+                } else {
+                    console.log(JSON.stringify(error.message), null, 4);
+                }
+                console.log(JSON.stringify(error.config), null, 4);
+            },
+        });
+    }, []);
+
+    console.log('redered');
 
     return (
         <View
@@ -112,7 +120,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                             <CardNotes
                                 key={note.id}
                                 desc={note.desc}
-                                title={note.title}
+                                title={note.tittle}
                                 onPress={() =>
                                     navigation.navigate('DetailNote', {
                                         noteId: note.id,
