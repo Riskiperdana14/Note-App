@@ -1,19 +1,18 @@
 import mongoose from "mongoose";
 import moment from "moment";
-import Admin from "../models/mainModel.js";
+import Note from "../models/mainModel.js";
 
 const mainController = {
   addNote: async (req, res) => {
     try {
-      const { tittle, desc } = req.body;
+      const { title, desc } = req.body;
 
-      const newAdmin = new Admin({
-        tittle: tittle,
+      const newNote = new Note({
+        title: title,
         desc: desc,
-
       });
 
-      await newAdmin.save();
+      await newNote.save();
       res.status(200).json({ msg: "Data masuk" });
     } catch (error) {
       console.log("Error:", error);
@@ -23,22 +22,22 @@ const mainController = {
 
   getNotes: async (req, res) => {
     try {
-      const admins = await Admin.find();
-      const proadmin = admins.map((admin) => {
+      const Notes = await Note.find();
+      const proNote = Notes.map((Note) => {
         return {
-          id:admin.id,
-          tittle: admin.tittle,
-          content: admin.content,
-          dibuatSaat: moment(admin.createdAt).format(
+          _id: Note._id,
+          title: Note.title,
+          desc: Note.desc,
+          dibuatSaat: moment(Note.createdAt).format(
             "dddd-DD-MMMM-YYYY[T]HH:mm:ss"
           ),
-          dieditSaat: moment(admin.updatedAt).format(
+          dieditSaat: moment(Note.updatedAt).format(
             "dddd-DD-MMMM-YYYY[T]HH:mm:ss"
           ),
         };
       });
 
-      res.status(200).json(proadmin);
+      res.status(200).json(proNote);
     } catch (error) {
       console.log("Error:", error);
       res.status(500).json(error);
@@ -48,21 +47,21 @@ const mainController = {
   getNoteById: async (req, res) => {
     try {
       const { id } = req.params;
-      const admin = await Admin.findById(id);
+      const Note = await Note.findById(id);
 
-      if (!admin) {
+      if (!Note) {
         return res.status(500).json({ msg: "Catatan tidak ditemukan" });
       }
 
       // Format data yang ingin Anda kembalikan, misalnya hanya ID saja
       const formattedNote = {
-        // _id: admin._id,
-        tittle: admin.tittle,
-        desc: admin.desc,
-        dibuatSaat: moment(admin.createdAt).format(
+        // _id: Note._id,
+        title: Note.title,
+        desc: Note.desc,
+        dibuatSaat: moment(Note.createdAt).format(
           "dddd-DD-MMMM-YYYY[T]HH:mm:ss"
         ),
-        dieditSaat: moment(admin.updatedAt).format(
+        dieditSaat: moment(Note.updatedAt).format(
           "dddd-DD-MMMM-YYYY[T]HH:mm:ss"
         ),
       };
@@ -77,19 +76,19 @@ const mainController = {
   updateNote: async (req, res) => {
     try {
       const { id } = req.params;
-      const { tittle, content } = req.body;
+      const { title, desc } = req.body;
 
-      const updatedAdmin = await Admin.findByIdAndUpdate(
+      const updatedNote = await Note.findByIdAndUpdate(
         id,
-        { tittle: tittle, content: content },
+        { title: title, desc: desc },
         { new: true }
       );
 
-      if (!updatedAdmin) {
+      if (!updatedNote) {
         return res.status(500).json({ msg: "Catatan tidak ditemukan" });
       }
 
-      res.status(200).json({ msg: "Catatan berhasil diupdate", updatedAdmin });
+      res.status(200).json({ msg: "Catatan berhasil diupdate", updatedNote });
     } catch (error) {
       console.log("Error:", error);
       res.status(500).json(error);
@@ -100,13 +99,13 @@ const mainController = {
     try {
       const { id } = req.params;
 
-      const deletedAdmin = await Admin.findByIdAndDelete(id);
+      const deletedNote = await Note.findByIdAndDelete(id);
 
-      if (!deletedAdmin) {
+      if (!deletedNote) {
         return res.status(404).json({ msg: "Catatan tidak ditemukan" });
       }
 
-      res.status(200).json({ msg: "Catatan berhasil dihapus", deletedAdmin });
+      res.status(200).json({ msg: "Catatan berhasil dihapus", deletedNote });
     } catch (error) {
       console.log("Error:", error);
       res.status(500).json(error);
