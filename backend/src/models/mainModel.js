@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
-// Definisi schema untuk entitas Admin
-const adminSchema = new mongoose.Schema(
+const mainSchema = new mongoose.Schema(
   {
     tittle: {
       type: String,
@@ -15,6 +14,6 @@ const adminSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Admin = mongoose.model("Admin", adminSchema);
+const Admin = mongoose.model("Admin", mainSchema);
 
 export default Admin;
