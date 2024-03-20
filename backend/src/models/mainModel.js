@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const mainSchema = new mongoose.Schema(
   {
-    tittle: {
+    title: {
       type: String,
       required: true,
     },
-    content: {
+    desc: {
       type: String,
       required: true,
     },
@@ -14,6 +14,6 @@ const mainSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Admin = mongoose.model("Admin", mainSchema);
+const Note = mongoose.model("Note", mainSchema);
 
-export default Admin;
+export default Note;
