@@ -1,8 +1,3 @@
-import CreateNote from '../screens/CreateNote';
-import DetailNote from '../screens/DetailNote';
-import CardNotes from '../components/CardNotes';
-import EditNote from '../screens/EditNote';
-
 export type RootStackParamList = {
     MainPage: undefined;
     DetailNote: {
@@ -10,5 +5,10 @@ export type RootStackParamList = {
     };
     CreateNote: undefined;
     CardNotes: undefined;
-    EditNote: undefined;
+    EditNote: {
+        noteId: string;
+        formattedCreatedAt: string;
+        title: string;
+        desc: string;
+    };
 };

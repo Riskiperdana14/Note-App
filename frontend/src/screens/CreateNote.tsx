@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+
 import {
+    Alert,
     Pressable,
     ScrollView,
     Text,
@@ -14,9 +16,12 @@ import { Formik, FormikHelpers, FormikProps } from 'formik';
 import { CreateNoteForm } from '../types/Service';
 import * as yup from 'yup';
 import LinearGradient from 'react-native-linear-gradient';
+import { useCreateNote } from '../hooks/useNotes';
 
 const CreateNote: React.FC<CreateNoteProps> = ({ navigation }) => {
     const { width } = useWindowDimensions();
+    const [newNoteId, setNewNoteId] = useState<string | null>(null);
+    const mutationCreateNote = useCreateNote();
     const addNoteInitialValue: CreateNoteForm = {
         title: '',
         desc: '',
@@ -26,8 +31,20 @@ const CreateNote: React.FC<CreateNoteProps> = ({ navigation }) => {
         desc: yup.string().required('Description is required'),
     });
 
-    const onSubmit = (values: CreateNoteForm) => {
-        console.log('formik values', values);
+    const onSubmit = async (
+        values: CreateNoteForm,
+        actions: FormikHelpers<CreateNoteForm>,
+    ) => {
+        console.log('here', values);
+
+        mutationCreateNote.mutate(values, {
+            onSuccess: data => {
+                navigation.replace('MainPage');
+            },
+            onError: error => {
+                console.error('error', error);
+            },
+        });
     };
 
     return (
@@ -48,11 +65,14 @@ const CreateNote: React.FC<CreateNoteProps> = ({ navigation }) => {
                     <Formik
                         initialValues={addNoteInitialValue}
                         validationSchema={addNoteSchema}
-                        onSubmit={values => onSubmit(values)}>
+                        onSubmit={(values, actions) =>
+                            onSubmit(values, actions)
+                        }>
                         {({
                             handleChange,
                             handleSubmit,
                             values,
+                            isValid,
                         }: FormikProps<CreateNoteForm>) => (
                             <>
                                 <View
@@ -74,7 +94,7 @@ const CreateNote: React.FC<CreateNoteProps> = ({ navigation }) => {
                                         onPress={() => navigation.goBack()}>
                                         <BackIcon />
                                     </Pressable>
-                                    {values.desc && values.title && (
+                                    {values.desc && values.title && isValid && (
                                         <Pressable
                                             style={{
                                                 display: 'flex',

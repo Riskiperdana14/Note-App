@@ -9,12 +9,54 @@ import { DetailNoteProps } from '../types/Screens';
 import { BackIcon } from '../components/Svg';
 import { PenIcon } from '../components/Svg';
 import LinearGradient from 'react-native-linear-gradient';
+import { useGetNoteById } from '../hooks/useNotes';
+import { GetNotesResponse } from '../types/Service';
+import { useEffect, useState } from 'react';
+import moment from 'moment';
 
 const DetailNote: React.FC<DetailNoteProps> = ({ navigation, route }) => {
+    const mutationGetNoteById = useGetNoteById();
+    const [note, setNote] = useState<GetNotesResponse>();
     const { width } = useWindowDimensions();
     const { params } = route;
+    console.log('dibuatSaat', note?.dibuatSaat);
+    console.log('dieditSaat', note?.dieditSaat);
 
-    console.log('params', params.noteId);
+    useEffect(() => {
+        mutationGetNoteById.mutate(params.noteId, {
+            onSuccess: note => {
+                setNote(note.data);
+            },
+        });
+    }, []);
+
+    // Mendapatkan waktu sekarang
+    const currentDiff = moment().diff(moment(note?.dieditSaat));
+
+    // Menghitung selisih waktu antara waktu sekarang dan waktu yang diberikan
+    const lastEditedDiff = moment.duration(currentDiff);
+
+    // Mendapatkan jumlah jam yang telah berlalu sejak terakhir kali diedit
+    const lastEditedHoursDiff = lastEditedDiff.asHours();
+
+    // Format untuk menampilkan waktu yang telah berlalu sejak terakhir kali diedit
+    let formattedLastEditedDiff = '';
+    if (lastEditedDiff.asMinutes() < 1) {
+        formattedLastEditedDiff = 'last edited just now';
+    } else if (lastEditedHoursDiff > 24) {
+        formattedLastEditedDiff = `last edited at ${lastEditedDiff
+            .asDays()
+            .toFixed(0)} days ago`;
+    } else if (lastEditedHoursDiff < 24 && lastEditedHoursDiff > 1) {
+        formattedLastEditedDiff = `last edited at ${lastEditedHoursDiff.toFixed(
+            0,
+        )} hours ago`;
+    } else {
+        const lastEditedMinutesDiff = lastEditedDiff.asMinutes().toFixed(0);
+        formattedLastEditedDiff = `last edited at ${lastEditedMinutesDiff} minutes ago`;
+    }
+
+    const formattedCreatedAt = moment(note?.dibuatSaat).format('MMM D, YYYY');
 
     return (
         <View
@@ -59,7 +101,14 @@ const DetailNote: React.FC<DetailNoteProps> = ({ navigation, route }) => {
                                 justifyContent: 'center',
                                 padding: 10,
                             }}
-                            onPress={() => navigation.navigate('EditNote')}>
+                            onPress={() =>
+                                navigation.navigate('EditNote', {
+                                    noteId: params.noteId,
+                                    formattedCreatedAt: formattedCreatedAt,
+                                    desc: note ? note.desc : 'Title default',
+                                    title: note ? note.title : 'Desc default',
+                                })
+                            }>
                             <PenIcon />
                         </Pressable>
                     </View>
@@ -76,7 +125,7 @@ const DetailNote: React.FC<DetailNoteProps> = ({ navigation, route }) => {
                                 justifyContent: 'center',
                                 padding: 20,
                             }}>
-                            created at mar 8, 2024
+                            created at {formattedCreatedAt}
                         </Text>
                         <Text
                             style={{
@@ -85,7 +134,7 @@ const DetailNote: React.FC<DetailNoteProps> = ({ navigation, route }) => {
                                 justifyContent: 'center',
                                 padding: 20,
                             }}>
-                            last edited at 2 hours ago
+                            {formattedLastEditedDiff}
                         </Text>
                     </View>
                     <View>
@@ -96,7 +145,7 @@ const DetailNote: React.FC<DetailNoteProps> = ({ navigation, route }) => {
                                 color: '#000000',
                                 padding: 20,
                             }}>
-                            Elementum
+                            {note?.title}
                         </Text>
                         <Text
                             style={{
@@ -105,20 +154,7 @@ const DetailNote: React.FC<DetailNoteProps> = ({ navigation, route }) => {
                                 color: '#000000',
                                 padding: 20,
                             }}>
-                            Nullam vulputate nisl id ligula egestas posuere.
-                            Pellentesque iaculis fermentum dui, volutpat blandit
-                            velit fringilla eget. Vestibulum ultrices nisl nec
-                            neque tincidunt maximus. Sed a dolor vel ipsum
-                            lacinia tempor vel eget quam. Aenean et posuere
-                            odio. Phasellus eu lacinia dolor, eget tristique
-                            dui. Fusce quis massa libero. Fusce vulputate elit
-                            ut metus condimentum consequat. Vivamus eget
-                            faucibus neque. Praesent in libero rutrum, suscipit
-                            ligula condimentum, tempus justo. Duis ac cursus ex.
-                            Phasellus pulvinar egestas purus, id porta ex
-                            iaculis sit amet. Quisque id ultrices dolor.
-                            Curabitur mollis non felis quis dictum. Nunc eget
-                            est nec turpis placerat feugiat.
+                            {note?.desc}
                         </Text>
                     </View>
                 </ScrollView>

@@ -3,7 +3,6 @@ import MainPage from '../screens/MainPage';
 import CreateNote from '../screens/CreateNote';
 import DetailNote from '../screens/DetailNote';
 import EditNote from '../screens/EditNote';
-import CardNotes from '../components/CardNotes';
 import { RootStackParamList } from '../types/Navigators';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

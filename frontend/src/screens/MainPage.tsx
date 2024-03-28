@@ -1,34 +1,47 @@
+import React, { useEffect, useState } from 'react';
 import {
+    Alert,
+    Modal,
     Pressable,
     ScrollView,
     Text,
+    TouchableOpacity,
     View,
     useWindowDimensions,
-    Modal,
-    TouchableOpacity,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
 import CardNotes from '../components/CardNotes';
 import { PlusIcon } from '../components/Svg';
+import { useGetAllNotes, usefindByIdAndDelete } from '../hooks/useNotes';
 import { MainPageProps } from '../types/Screens';
 import { GetNotesResponse } from '../types/Service';
-import { useGetAllNotes } from '../../hooks/useNotes';
 
 const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+    const [selectedNoteId, setSelectedNoteId] = useState<string>('');
+    const [deleteConfirm, setDeleteConfirm] = useState<boolean>(false);
     const [notes, setNotes] = useState<GetNotesResponse[]>([]);
     const mutationGetAllNotes = useGetAllNotes();
+    const mutationDeleteNote = usefindByIdAndDelete();
     // console.log('notes: ', JSON.stringify(notes, null, 4));
 
-    const handleDelete = () => {
-        console.log('deleted');
+    const handleDelete = (noteId: string) => {
+        setSelectedNoteId(noteId);
         setModalVisible(true);
     };
 
     const handleConfirmDelete = () => {
-        setModalVisible(false);
+        mutationDeleteNote.mutate(selectedNoteId, {
+            onSuccess: () => {
+                setModalVisible(false);
+            },
+            onError: (error: any) => {
+                console.error('Error deleting note:', error);
+                Alert.alert('Error', 'Failed to delete note');
+                setModalVisible(false);
+            },
+        });
+        setDeleteConfirm(true);
     };
 
     const handleCancelDelete = () => {
@@ -38,6 +51,8 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     useEffect(() => {
         mutationGetAllNotes.mutate(undefined, {
             onSuccess: response => {
+                console.log(response);
+
                 setNotes(response.data);
             },
             onError: error => {
@@ -52,9 +67,6 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                         4,
                     );
                 } else if (error.request) {
-                    // The request was made but no response was received
-                    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-                    // http.ClientRequest in node.js
                     console.log(JSON.stringify(error.request), null, 4);
                 } else {
                     console.log(JSON.stringify(error.message), null, 4);
@@ -62,7 +74,8 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                 console.log(JSON.stringify(error.config), null, 4);
             },
         });
-    }, []);
+        setDeleteConfirm(false);
+    }, [deleteConfirm]);
 
     console.log('redered');
 
@@ -118,17 +131,15 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                     {notes.map(note => {
                         return (
                             <CardNotes
-                                key={note.id}
+                                key={note._id}
                                 desc={note.desc}
-                                title={note.tittle}
+                                title={note.title}
                                 onPress={() =>
                                     navigation.navigate('DetailNote', {
-                                        noteId: note.id,
+                                        noteId: note._id,
                                     })
                                 }
-                                onlongPress={() => {
-                                    handleDelete();
-                                }}
+                                onlongPress={() => handleDelete(note._id)}
                             />
                         );
                     })}
@@ -160,7 +171,8 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                                 justifyContent: 'space-around',
                                 marginTop: 10,
                             }}>
-                            <TouchableOpacity onPress={handleConfirmDelete}>
+                            <TouchableOpacity
+                                onPress={() => handleConfirmDelete()}>
                                 <Text style={{ color: 'red' }}>Delete</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleCancelDelete}>
