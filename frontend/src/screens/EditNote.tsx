@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Pressable,
     ScrollView,
@@ -11,8 +11,46 @@ import { EditNoteProps } from '../types/Screens';
 import { BackIcon } from '../components/Svg';
 import { CheckIcon } from '../components/Svg';
 import LinearGradient from 'react-native-linear-gradient';
+import { usefindByIdAndUpdate } from '../hooks/useNotes';
+import { EditNoteApiParams, EditNoteReq } from '../types/Service';
+import { Formik, FormikHelpers, FormikProps } from 'formik';
+import * as yup from 'yup';
 
-const EditNote: React.FC<EditNoteProps> = ({ navigation }) => {
+const EditNote: React.FC<EditNoteProps> = ({ navigation, route }) => {
+    const { width } = useWindowDimensions();
+    const mutationusefindByIdAndUpdate = usefindByIdAndUpdate();
+    const { params } = route;
+    const addNoteInitialValue: EditNoteReq = {
+        title: '',
+        desc: '',
+    };
+    const editNoteSchema: yup.ObjectSchema<EditNoteReq> = yup.object().shape({
+        title: yup.string().required('Title is required'),
+        desc: yup.string().required('Description is required'),
+    });
+
+    const onSubmit = async (
+        values: EditNoteReq,
+        actions: FormikHelpers<EditNoteReq>,
+    ) => {
+        const editNoteValue: EditNoteApiParams = {
+            noteId: params.noteId,
+            request: values,
+        };
+
+        mutationusefindByIdAndUpdate.mutate(editNoteValue, {
+            onSuccess: data => {
+                // console.log('data', data.data);
+                navigation.replace('MainPage');
+            },
+            onError: error => {
+                console.error('error', error);
+            },
+        });
+    };
+
+    const [note, setNote] = useState<EditNoteReq>();
+
     return (
         <View
             style={{
@@ -30,70 +68,86 @@ const EditNote: React.FC<EditNoteProps> = ({ navigation }) => {
                     contentContainerStyle={{
                         flexGrow: 1,
                     }}>
-                    <View
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#B1AC7C',
-                            padding: 20,
-                        }}>
-                        <Pressable
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: 10,
-                            }}
-                            onPress={() => navigation.goBack()}>
-                            <BackIcon />
-                        </Pressable>
-                        <Pressable
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: 10,
-                            }}
-                            onPress={() => navigation.goBack()}>
-                            <CheckIcon />
-                        </Pressable>
-                    </View>
-                    <Text
-                        style={{
-                            fontFamily: 'Cabin-Italic',
-                            fontSize: 13,
-                            justifyContent: 'center',
-                            padding: 20,
-                        }}>
-                        edited at 2 hours ago
-                    </Text>
-                    <TextInput
-                        placeholder=""
-                        style={{
-                            fontFamily: 'Cabin-Regular',
-                            fontSize: 34,
-                            padding: 20,
-                        }}>
-                        Elementum
-                    </TextInput>
-                    <TextInput
-                        multiline={true}
-                        style={{
-                            fontFamily: 'Cabin-Regular',
-                            fontSize: 25,
-                            padding: 20,
-                        }}>
-                        Nullam vulputate nisl id ligula egestas posuere.
-                        Pellentesque iaculis fermentum dui, volutpat blandit
-                        velit fringilla eget. Vestibulum ultrices nisl nec neque
-                        tincidunt maximus. Sed a dolor vel ipsum lacinia tempor
-                        vel eget quam. Aenean et posuere odio. Phasellus eu
-                        lacinia dolor, eget tristique dui. Fusce quis massa
-                        libero. Fusce vulputate elit ut metus condimentum
-                        consequat
-                    </TextInput>
+                    <Formik
+                        initialValues={{
+                            title: note?.title || '',
+                            desc: note?.desc || '',
+                        }}
+                        validationSchema={editNoteSchema}
+                        onSubmit={(values, actions) =>
+                            onSubmit(values, actions)
+                        }>
+                        {({
+                            handleChange,
+                            handleSubmit,
+                            values,
+                            isValid,
+                        }: FormikProps<EditNoteReq>) => (
+                            <View>
+                                <View
+                                    style={{
+                                        flex: 1,
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        borderBottomWidth: 1,
+                                        borderBottomColor: '#B1AC7C',
+                                        padding: 20,
+                                    }}>
+                                    <Pressable
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: 10,
+                                        }}
+                                        onPress={() => navigation.goBack()}>
+                                        <BackIcon />
+                                    </Pressable>
+                                    <Pressable
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: 10,
+                                        }}
+                                        onPress={() => handleSubmit()}>
+                                        <CheckIcon />
+                                    </Pressable>
+                                </View>
+                                <Text
+                                    style={{
+                                        fontFamily: 'Cabin-Italic',
+                                        fontSize: 13,
+                                        justifyContent: 'center',
+                                        padding: 20,
+                                    }}>
+                                    Created at {params.formattedCreatedAt}
+                                </Text>
+                                <TextInput
+                                    placeholder={params.title}
+                                    onChangeText={handleChange('title')}
+                                    value={values.title}
+                                    style={{
+                                        fontFamily: 'Cabin-Regular',
+                                        fontSize: 34,
+                                        padding: 20,
+                                    }}
+                                />
+                                <TextInput
+                                    placeholder={params.desc}
+                                    onChangeText={handleChange('desc')}
+                                    value={values.desc}
+                                    multiline={true}
+                                    style={{
+                                        fontFamily: 'Cabin-Regular',
+                                        fontSize: 25,
+                                        // height: '45%',
+                                    }}
+                                />
+                            </View>
+                        )}
+                    </Formik>
                 </ScrollView>
             </LinearGradient>
         </View>

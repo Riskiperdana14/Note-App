@@ -1,62 +1,83 @@
+import React, { useEffect, useState } from 'react';
 import {
+    Alert,
+    Modal,
     Pressable,
     ScrollView,
     Text,
+    TouchableOpacity,
     View,
     useWindowDimensions,
-    Modal,
-    TouchableOpacity,
 } from 'react-native';
-import React, { useState } from 'react';
 import CardNotes from '../components/CardNotes';
 import { PlusIcon } from '../components/Svg';
+import { useGetAllNotes, usefindByIdAndDelete } from '../hooks/useNotes';
 import { MainPageProps } from '../types/Screens';
 import { GetNotesResponse } from '../types/Service';
-
-const notes: GetNotesResponse[] = [
-    {
-        id: '1',
-        title: 'Title 1',
-        desc: 'Lorem ipsum dolor sit amet, consectetur adip nonum et just sed diam non proident du contratibus et just sed diam non proident du tincidunt et just sed diam non proident',
-    },
-    {
-        id: '2',
-        title: 'Title 2',
-        desc: 'Lorem ipsum dolor sit amet, consectetur adip nonum et just sed diam non proident du contratibus et just sed diam non proident du tincidunt et just sed diam non proident',
-    },
-    {
-        id: '3',
-        title: 'Title 3',
-        desc: 'Lorem ipsum dolor sit amet, consectetur adip nonum et just sed diam non proident du contratibus et just sed diam non proident du tincidunt et just sed diam non proident',
-    },
-    {
-        id: '4',
-        title: 'Title 4',
-        desc: 'Lorem ipsum dolor sit amet, consectetur adip nonum et just sed diam non proident du contratibus et just sed diam non proident du tincidunt et just sed diam non proident',
-    },
-];
 
 const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+    const [selectedNoteId, setSelectedNoteId] = useState<string>('');
+    const [deleteConfirm, setDeleteConfirm] = useState<boolean>(false);
+    const [notes, setNotes] = useState<GetNotesResponse[]>([]);
+    const mutationGetAllNotes = useGetAllNotes();
+    const mutationDeleteNote = usefindByIdAndDelete();
+    // console.log('notes: ', JSON.stringify(notes, null, 4));
 
-    const handleDelete = () => {
+    const handleDelete = (noteId: string) => {
+        setSelectedNoteId(noteId);
         setModalVisible(true);
     };
 
-    const handleDeleteNote = () => {
-        console.log('Deleting note with id:', selectedNoteId);
-        setModalVisible(false);
-    };
-
     const handleConfirmDelete = () => {
-        setModalVisible(false);
+        mutationDeleteNote.mutate(selectedNoteId, {
+            onSuccess: () => {
+                setModalVisible(false);
+            },
+            onError: (error: any) => {
+                console.error('Error deleting note:', error);
+                Alert.alert('Error', 'Failed to delete note');
+                setModalVisible(false);
+            },
+        });
+        setDeleteConfirm(true);
     };
 
     const handleCancelDelete = () => {
         setModalVisible(false);
     };
+
+    useEffect(() => {
+        mutationGetAllNotes.mutate(undefined, {
+            onSuccess: response => {
+                console.log(response);
+
+                setNotes(response.data);
+            },
+            onError: error => {
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    console.log(JSON.stringify(error.response.data, null, 4));
+                    console.log(JSON.stringify(error.response.status, null, 4));
+                    console.log(
+                        JSON.stringify(error.response.headers),
+                        null,
+                        4,
+                    );
+                } else if (error.request) {
+                    console.log(JSON.stringify(error.request), null, 4);
+                } else {
+                    console.log(JSON.stringify(error.message), null, 4);
+                }
+                console.log(JSON.stringify(error.config), null, 4);
+            },
+        });
+        setDeleteConfirm(false);
+    }, [deleteConfirm]);
+
+    console.log('redered');
 
     return (
         <View
@@ -110,17 +131,15 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                     {notes.map(note => {
                         return (
                             <CardNotes
-                                key={note.id}
+                                key={note._id}
                                 desc={note.desc}
                                 title={note.title}
                                 onPress={() =>
                                     navigation.navigate('DetailNote', {
-                                        noteId: note.id,
+                                        noteId: note._id,
                                     })
                                 }
-                                onlongPress={() => {
-                                    handleDelete();
-                                }}
+                                onlongPress={() => handleDelete(note._id)}
                             />
                         );
                     })}
@@ -152,7 +171,8 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
                                 justifyContent: 'space-around',
                                 marginTop: 10,
                             }}>
-                            <TouchableOpacity onPress={handleConfirmDelete}>
+                            <TouchableOpacity
+                                onPress={() => handleConfirmDelete()}>
                                 <Text style={{ color: 'red' }}>Delete</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleCancelDelete}>
