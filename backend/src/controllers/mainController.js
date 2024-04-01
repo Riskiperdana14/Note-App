@@ -47,7 +47,7 @@ const mainController = {
   getNoteById: async (req, res) => {
     try {
       const { id } = req.params;
-      const Note = await Note.findById(id);
+      const note = await Note.findById(id);
 
       if (!Note) {
         return res.status(500).json({ msg: "Catatan tidak ditemukan" });
@@ -56,14 +56,10 @@ const mainController = {
       // Format data yang ingin Anda kembalikan, misalnya hanya ID saja
       const formattedNote = {
         // _id: Note._id,
-        title: Note.title,
-        desc: Note.desc,
-        dibuatSaat: moment(Note.createdAt).format(
-          "dddd-DD-MMMM-YYYY[T]HH:mm:ss"
-        ),
-        dieditSaat: moment(Note.updatedAt).format(
-          "dddd-DD-MMMM-YYYY[T]HH:mm:ss"
-        ),
+        title: note.title,
+        desc: note.desc,
+        dibuatSaat: moment(Note.createdAt),
+        dieditSaat: moment(Note.updatedAt),
       };
 
       res.status(200).json(formattedNote);
